@@ -1,0 +1,226 @@
+---
+// Data Dummy - Nanti bisa kamu ganti dengan datamu sendiri
+const aboutData = {
+  title: "A Bit About Me",
+  paragraphs: [
+    "I'm a digital craftsman based in Jakarta, weaving lines of code into immersive and engaging web experiences. My journey began not in a classroom, but from a deep curiosity about how a simple idea could transform into something interactive and beautiful on a screen.",
+    "For me, development is not just about logic; it's a blend of art and engineering. I thrive on challenges, love clean code, and I'm perpetually learning in this ever-evolving digital landscape."
+  ],
+  imageUrl: "https://images.unsplash.com/photo-1557862921-37829c790f19?q=80&w=2071&auto=format&fit=crop", // Ganti dengan URL fotomu
+  quickFacts: [
+    { label: "Location", value: "Jakarta, ID" },
+    { label: "Focus", value: "Creative Frontend" },
+    { label: "Status", value: "Available for freelance" },
+  ]
+};
+---
+
+<section id="about" class="about-section">
+  <!-- Elemen Dekoratif di Latar Belakang -->
+  <div class="background-text">EXPLORE</div>
+
+  <div class="about-container">
+    <!-- Panel Judul -->
+    <div class="panel title-panel">
+      <h2 class="title">{aboutData.title}</h2>
+    </div>
+
+    <!-- Panel Foto (Ala Polaroid) -->
+    <div class="panel image-panel">
+      <div class="polaroid">
+        <img src={aboutData.imageUrl} alt="Potret YORALPH" class="image" />
+        <p class="caption">It's me, crafting your next idea.</p>
+      </div>
+    </div>
+
+    <!-- Panel Bio/Teks Utama -->
+    <div class="panel bio-panel">
+      {aboutData.paragraphs.map(p => <p class="paragraph">{p}</p>)}
+    </div>
+
+    <!-- Panel Fakta Singkat -->
+    <div class="panel stats-panel">
+      <ul class="stats-list">
+        {aboutData.quickFacts.map(fact => (
+          <li class="stat-item">
+            <span class="stat-label">{fact.label}:</span>
+            <span class="stat-value">{fact.value}</span>
+          </li>
+        ))}
+      </ul>
+      <a href="#contact" class="contact-link">Let's Talk →</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .about-section {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    background-color: #FCFAEE; /* Warna sama dengan EntryPoint */
+    color: #1a1a1a;
+    padding: 5vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; /* Penting untuk elemen absolut */
+  }
+
+  /* Teks besar di background untuk estetika */
+  .background-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 30vw;
+    font-weight: 800;
+    color: rgba(0, 0, 0, 0.04);
+    font-family: 'balastaral', sans-serif; /* Pake font utamamu */
+    z-index: 0;
+    user-select: none;
+  }
+
+  /* Kontainer utama menggunakan CSS Grid */
+  .about-container {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto 1fr auto;
+    gap: 2rem;
+    width: 100%;
+    max-width: 1200px;
+  }
+
+  .panel {
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .panel:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Penempatan setiap panel di dalam grid */
+  .title-panel {
+    grid-column: 1 / 3;
+    grid-row: 1;
+    transform: rotate(-2deg);
+  }
+  .title {
+    font-family: 'balastaral', sans-serif;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    margin: 0;
+  }
+
+  .image-panel {
+    grid-column: 3 / 5;
+    grid-row: 1 / 3;
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .polaroid {
+    background: white;
+    padding: 1rem;
+    padding-bottom: 3rem;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    transform: rotate(4deg);
+    transition: transform 0.3s ease;
+  }
+  .polaroid:hover {
+    transform: rotate(2deg) scale(1.03);
+  }
+  .image {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+  .caption {
+    position: absolute;
+    bottom: 1rem;
+    left: 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: #555;
+  }
+
+  .bio-panel {
+    grid-column: 1 / 3;
+    grid-row: 2;
+  }
+  .paragraph {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin-bottom: 1rem;
+  }
+
+  .stats-panel {
+    grid-column: 1 / 5;
+    grid-row: 3;
+    background-color: #1a1a1a;
+    color: #FCFAEE;
+  }
+  .stats-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+  .stat-label {
+    font-weight: 600;
+    margin-right: 0.5rem;
+  }
+  .contact-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: #FCFAEE;
+    text-decoration: none;
+    font-weight: 600;
+    transition: transform 0.2s ease;
+  }
+  .contact-link:hover {
+    transform: translateX(5px);
+  }
+
+  /* Tampilan untuk Mobile */
+  @media (max-width: 768px) {
+    .about-container {
+      grid-template-columns: 1fr; /* Stack semua panel */
+      grid-template-rows: auto;
+      gap: 1.5rem;
+    }
+    .title-panel, .image-panel, .bio-panel, .stats-panel {
+      grid-column: 1; /* Reset posisi grid */
+    }
+    .image-panel {
+      grid-row: 2; /* Atur urutan untuk mobile */
+    }
+    .bio-panel {
+      grid-row: 3;
+    }
+    .stats-panel {
+      grid-row: 4;
+    }
+    .polaroid {
+      transform: rotate(2deg);
+    }
+    .stats-list {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+  }
+</style>

@@ -1,4 +1,24 @@
 <!-- Misalnya di file src/components/Footer.astro -->
-<footer class="w-full h-[50vh] bg-white flex items-center justify-center border-b-10 border-red-500">
-    <img src="/shao-sitting.png" alt="shao" class="h-99">
+<footer class="w-full h-[50vh] bg-white border-b-[10px] border-red-500 flex">
+
+  <!-- BAGIAN 1: Lebar 2/4 (50%), tanpa border kiri -->
+  <!-- Dibuat flex untuk menempatkan gambar di bawah -->
+  <div class="w-1/4 h-full flex items-end">
+  </div>
+  <div class="w-1/4 h-full flex items-end pb-0 pl-16">
+    <img src="/shao-sitting.png" alt="shao" class="h-65 object-contain">
+  </div>
+
+  <!-- BAGIAN 2: Lebar 1/4 (25%), dengan border kiri -->
+  <div class="w-1/4 h-full border-l-2 border-gray-300 p-4">
+    <!-- Konten untuk bagian kedua di sini -->
+    <p class="text-black">Kolom 2</p>
+  </div>
+
+  <!-- BAGIAN 3: Lebar 1/4 (25%), dengan border kiri -->
+  <div class="w-1/4 h-full border-l-2 border-gray-300 p-4">
+    <!-- Konten untuk bagian ketiga di sini -->
+    <p class="text-black">Kolom 3</p>
+  </div>
+
 </footer>
