@@ -198,7 +198,7 @@
 </script>
 
 <!-- Container utama dengan padding untuk gambar yang overflow -->
-<div class="fixed bottom-5 left-5">
+<div class="fixed bottom-5 left-5 z-999">
   <div class="relative">
     <div class="absolute left-0.5 z-10 transition-all duration-300 ease-out" 
          class:-top-2={!isExpanded} 
