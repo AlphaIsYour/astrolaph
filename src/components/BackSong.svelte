@@ -218,7 +218,7 @@
 
     <!-- Card Lagu -->
     <div 
-      class="bg-white text-gray-800 rounded-lg shadow-2xl overflow-visible transition-all duration-300 ease-out border border-gray-200 relative"
+      class="bg-transparent blur-8xl text-gray-800 rounded-lg shadow-2xl overflow-visible transition-all duration-300 ease-out border border-gray-200 relative"
       class:w-25={!isExpanded}
       class:w-105={isExpanded}
       class:h-16={!isExpanded}

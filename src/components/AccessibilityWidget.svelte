@@ -818,12 +818,12 @@
   }
 
   .fab:hover {
-    transform: scale(1.02);
+    transform: scale(1.01);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
   }
 
   .fab:active {
-    transform: scale(0.95) translateX(-2px);
+    transform: scale(0.95) translateX(0px);
   }
 
   .status-indicator {
@@ -1128,7 +1128,7 @@
 
   .font-btn:hover:not(:disabled) {
     border-color: var(--accent-color);
-    transform: scale(1.05);
+    transform: scale(1.01);
   }
 
   .font-btn:disabled {
@@ -1198,7 +1198,7 @@
     transition: transform var(--motion-duration);
   }
   .font-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.1);
+    transform: scale(1.01);
   }
 
   .font-slider::-moz-range-thumb {
@@ -1211,7 +1211,7 @@
     transition: transform var(--motion-duration);
   }
   .font-slider::-moz-range-thumb:hover {
-    transform: scale(1.1);
+    transform: scale(1.01);
   }
 
   /* Language Grid */
@@ -1378,3 +1378,4 @@
     }
   }
 </style>
+
