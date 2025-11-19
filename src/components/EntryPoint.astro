@@ -1,5 +1,13 @@
-<!-- Pembungkus utama tetap sama -->
+---
+import Lanyard from "./Lanyard";
+---
+
 <div class="relative grid grid-cols-10 min-h-screen w-full bg-[#EBEBE6]">
+  
+  <!-- Tambahkan Lanyard di posisi yang kamu mau -->
+  <div class="absolute inset-0 pointer-events-none z-10">
+    <Lanyard client:load position={[0, 0, 14]} gravity={[0, -40, 0]} />
+  </div>
 	
 	<!-- GAMBAR: Sekarang menggunakan posisi & ukuran persentase agar responsif -->
 	<!-- Anda bisa mengubah nilai persen (%) untuk menyesuaikan posisi -->
@@ -32,7 +40,9 @@
 				<div class="bg-gray-500 border border-black col-span-8"></div>
 				<div class="bg-gray-600 border border-black col-span-2">
 					<div class="grid grid-rows-10 w-full h-full">
-						<div class="bg-gray-700 border border-black row-span-2"></div>
+						<div class="bg-gray-700 border flex justify-center items-center border-black row-span-2"> 
+							<h1 class="text-white text-5xl font-bold">お茶子</h1>
+						</div>
 						<div class="bg-gray-800 border border-black row-span-8"></div>
 					</div>
 				</div>
