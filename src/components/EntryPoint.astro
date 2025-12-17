@@ -1,54 +1,107 @@
 ---
 import Lanyard from "./Lanyard";
+import CircularText from './CircularText';
+import RotatingText from './RotatingText'
 ---
+
+<style>
+  @font-face {
+    font-family: 'CustomFont';
+    src: url('/fonts/inlander.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  .custom-font {
+    font-family: 'CustomFont';
+  }
+</style>
+
 
 <div class="relative grid grid-cols-10 min-h-screen w-full bg-[#EBEBE6]">
   
-  <!-- Tambahkan Lanyard di posisi yang kamu mau -->
+  <!-- Lanyard overlay -->
   <div class="absolute inset-0 pointer-events-none z-10">
     <Lanyard client:load position={[0, 0, 14]} gravity={[0, -40, 0]} />
   </div>
-	
-	<!-- GAMBAR: Sekarang menggunakan posisi & ukuran persentase agar responsif -->
-	<!-- Anda bisa mengubah nilai persen (%) untuk menyesuaikan posisi -->
-	<!-- <img src="/shaoi.png" alt="shao" class="absolute top-[17%] right-[17.5%] w-[13%]  h-auto">
-	<img src="/sai.png" alt="sai" class="absolute top-[25%] right-[29%] w-[14%] h-auto">
-	<img src="/sia.png" alt="sia" class="absolute top-[44%] right-[38.7%] w-[21.5%]  h-auto z-20">
-	<img src="/soa.png" alt="soa" class="absolute top-[25.5%] right-[53.8%] w-[14%] h-auto z-10"> -->
 
-	<!-- Teks tidak perlu diubah, karena sudah responsif dengan 'vw' -->
-	<!-- <h1 class="text-[13vw] font-normal m-0 text-center leading-none tracking-[0.1em]" style="font-family: 'balastaral', sans-serif;">
-    YORALPH
-  </h1> -->
- <div class="bg-gray-500 border border-black  col-span-2">
-	<div class="grid grid-cols-2 min-h-screen w-full">
-		<div class="bg-gray-300 border border-black col-span-1">
-			<div class="grid grid-row-10 w-full h-full">
-				<div class="row-span-6 border border-black bg-gray-300"></div>
-				<div class="row-span-1 border border-black bg-gray-400"></div>
-				<div class="row-span-1 border border-black bg-gray-400"></div>
-				<div class="row-span-2 border border-black bg-gray-300"></div>
+  <!-- Left sidebar -->
+  <div class="bg-gray-500  col-span-2">
+    <div class="grid grid-cols-2 min-h-screen w-full">
+      <div class="bg-gray-300  col-span-1">
+        <div class="grid grid-rows-10 w-full h-full">
+          <div class="row-span-6  bg-gray-300">
+			<div class="grid grid-rows-3 gap-8 p-5 font-bold text-8xl items-center justify-center text-white">
+				<div class="row-span-1">夏</div>
+				<div class="row-span-1">油</div>
+				<div class="row-span-1">傑</div>
 			</div>
-		</div>
-		<div class="bg-gray-400 border border-black  col-span-1"></div>
-	</div>
- </div>
- <div class="bg-gray-500 border border-black col-span-8">
-	<div class="grid grid-rows-10 min-h-screen w-full">	
-		<div class="bg-gray-300 border border-black row-span-8">
-			<div class="grid grid-cols-10 w-full min-h-[79.8vh]">
-				<div class="bg-gray-500 border border-black col-span-8"></div>
-				<div class="bg-gray-600 border border-black col-span-2">
-					<div class="grid grid-rows-10 w-full h-full">
-						<div class="bg-gray-700 border flex justify-center items-center border-black row-span-2"> 
-							<h1 class="text-white text-5xl font-bold">お茶子</h1>
-						</div>
-						<div class="bg-gray-800 border border-black row-span-8"></div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<div class="bg-gray-400 border border-black  row-span-2"></div>
- </div>
+		  </div>
+          <div class="row-span-1  bg-gray-400"></div>
+          <div class="row-span-1  bg-gray-400"></div>
+          <div class="row-span-2  bg-gray-300"></div>
+        </div>
+      </div>
+      <div class="bg-gray-400  col-span-1"></div>
+    </div>
+  </div>
 
+  <!-- Main content -->
+  <div class="bg-gray-500  col-span-8">
+    <div class="grid grid-rows-10 min-h-screen w-full">	
+      <div class="bg-gray-300  row-span-8">
+        <div class="grid grid-cols-10 w-full min-h-[80vh]">
+          <div class="bg-gray-500  col-span-8">
+
+		  </div>
+          
+          <!-- Right sidebar with CircularText -->
+          <div class="bg-gray-600  col-span-2">
+            <div class="grid grid-rows-10 w-full h-full">
+              <!-- Header dengan text -->
+              <div class="bg-gray-700  flex justify-center items-center row-span-2"> 
+                <h1 class="text-white text-5xl font-bold">お茶子</h1>
+              </div>
+              
+              <!-- CircularText container - FIXED -->
+              <div class="bg-gray-800  row-span-8 flex items-center justify-center p-4 overflow-hidden">
+                <div class="w-[200px] h-[200px]">
+                  <CircularText
+                    client:load
+                    text="REACT*BITS*COMPONENTS*"
+                    onHover="speedUp"
+                    spinDuration={20}
+                    className="custom-class"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+<div class="bg-linear-to-br from-gray-800 via-gray-700 to-gray-900 row-span-2 flex items-center justify-center gap-3 p-8">
+  <h1 class="text-3xl md:text-4xl font-black text-white tracking-tight drop-shadow-lg custom-font">
+    PERKENALKAN SAYA 
+  </h1>
+  <RotatingText
+    client:load
+    texts={['Developer', 'Designer', 'Creator', 'Innovator']}
+    mainClassName="px-4 sm:px-4 md:px-5 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 text-white font-black text-3xl md:text-4xl overflow-hidden py-2 sm:py-3 md:py-4 justify-center rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 custom-font"
+    staggerFrom={"last"}
+    initial={{ y: "100%", opacity: 0 }}
+    animate={{ y: 0, opacity: 1 }}
+    exit={{ y: "-120%", opacity: 0 }}
+    staggerDuration={0.025}
+    splitLevelClassName="overflow-hidden pb-0.5 sm:pb-1 md:pb-1"
+    transition={{ 
+      type: "spring", 
+      damping: 30, 
+      stiffness: 400,
+    }}
+    rotationInterval={2000}
+  />
+</div>
+    </div>
+  </div>
 </div>
