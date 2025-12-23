@@ -14,7 +14,7 @@ const aboutData = {
 };
 ---
 
-<section id="about" class="about-section">
+<section id="about" class="about-section bg-texture">
 
   <div class="background-text">EXPLORE</div>
 
@@ -23,7 +23,6 @@ const aboutData = {
       <h2 class="title">{aboutData.title}</h2>
     </div>
 
-
     <div class="panel image-panel">
       <div class="polaroid">
         <img src={aboutData.imageUrl} alt="Potret YORALPH" class="image" />
@@ -31,11 +30,9 @@ const aboutData = {
       </div>
     </div>
 
-
     <div class="panel bio-panel">
       {aboutData.paragraphs.map(p => <p class="paragraph">{p}</p>)}
     </div>
-
 
     <div class="panel stats-panel">
       <ul class="stats-list">
@@ -52,13 +49,19 @@ const aboutData = {
 </section>
 
 <style>
+  .bg-texture {
+    background-image: url('/background/bg.jpg');
+    background-size: 200px 200px;
+    background-repeat: repeat;
+    background-position: center;
+  }
+
   .about-section {
     position: relative;
     width: 100%;
     min-height: 100vh;
-    background-color: #EBEBE6; 
     color: #1a1a1a;
-    padding: 5vw;
+    padding: 2rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -70,9 +73,9 @@ const aboutData = {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 30vw;
+    font-size: 18vw;
     font-weight: 800;
-    color: rgba(0, 0, 0, 0.04);
+    color: rgba(0, 0, 0, 0.1);
     font-family: 'balastaral', sans-serif;
     z-index: 0;
     user-select: none;
@@ -84,23 +87,23 @@ const aboutData = {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: auto 1fr auto;
-    gap: 2rem;
+    gap: 1rem;
     width: 100%;
-    max-width: 1200px;
+    max-width: 1000px;
   }
 
   .panel {
     background: rgba(255, 255, 255, 0.5);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.2);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
 
   .panel:hover {
-    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 24px 0 rgba(0, 0, 0, 0.12);
   }
   
   .title-panel {
@@ -110,7 +113,7 @@ const aboutData = {
   }
   .title {
     font-family: 'balastaral', sans-serif;
-    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
     margin: 0;
   }
 
@@ -127,9 +130,9 @@ const aboutData = {
   }
   .polaroid {
     background: white;
-    padding: 1rem;
-    padding-bottom: 3rem;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    padding: 0.8rem;
+    padding-bottom: 2.5rem;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
     transform: rotate(4deg);
     transition: transform 0.3s ease;
   }
@@ -143,10 +146,10 @@ const aboutData = {
   }
   .caption {
     position: absolute;
-    bottom: 1rem;
-    left: 1rem;
+    bottom: 0.8rem;
+    left: 0.8rem;
     font-family: 'Courier New', monospace;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: #555;
   }
 
@@ -155,9 +158,9 @@ const aboutData = {
     grid-row: 2;
   }
   .paragraph {
-    font-size: 1.1rem;
-    line-height: 1.7;
-    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 0.8rem;
   }
 
   .stats-panel {
@@ -172,18 +175,23 @@ const aboutData = {
     margin: 0;
     display: flex;
     flex-wrap: wrap;
-    gap: 1.5rem;
+    gap: 1.2rem;
   }
   .stat-label {
     font-weight: 600;
     margin-right: 0.5rem;
+    font-size: 0.9rem;
+  }
+  .stat-value {
+    font-size: 0.9rem;
   }
   .contact-link {
     display: inline-block;
-    margin-top: 1rem;
+    margin-top: 0.8rem;
     color: #FCFAEE;
     text-decoration: none;
     font-weight: 600;
+    font-size: 0.9rem;
     transition: transform 0.2s ease;
   }
   .contact-link:hover {
@@ -191,10 +199,13 @@ const aboutData = {
   }
 
   @media (max-width: 768px) {
+    .about-section {
+      padding: 1.5rem;
+    }
     .about-container {
       grid-template-columns: 1fr; 
       grid-template-rows: auto;
-      gap: 1.5rem;
+      gap: 1rem;
     }
     .title-panel, .image-panel, .bio-panel, .stats-panel {
       grid-column: 1;
@@ -213,7 +224,7 @@ const aboutData = {
     }
     .stats-list {
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.4rem;
     }
   }
 </style>

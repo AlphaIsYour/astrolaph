@@ -1,12 +1,11 @@
 <script>
   import { onMount } from 'svelte';
 
-  // State reaktif Svelte
+
   let nekoPosX = 32;
   let nekoPosY = 32;
-  let backgroundPosition = "-96px -96px"; // Posisi awal sprite (idle)
+  let backgroundPosition = "-96px -96px"; 
   
-  // Variabel internal yang di-port dari oneko.js
   let mousePosX = 0;
   let mousePosY = 0;
   let frameCount = 0;
@@ -15,7 +14,6 @@
   let idleAnimationFrame = 0;
 
   const nekoSpeed = 10;
-  // Peta sprite persis seperti di source code
   const spriteSets = {
     idle: [[-3, -3]],
     alert: [[-7, -3]],
@@ -36,8 +34,6 @@
     NW: [[-1, 0], [-1, -1]],
   };
 
-  // --- Fungsi yang di-port dari oneko.js ---
-
   function setSprite(name, frame) {
     const sprite = spriteSets[name][frame % spriteSets[name].length];
     backgroundPosition = `${sprite[0] * 32}px ${sprite[1] * 32}px`;
@@ -51,7 +47,6 @@
   function idle() {
     idleTime += 1;
 
-    // Trigger animasi idle acak jika mouse diam cukup lama
     if (idleTime > 10 && Math.random() < 0.005 && idleAnimation == null) {
       let availableIdleAnimations = ["sleeping", "scratchSelf"];
       if (nekoPosX < 32) availableIdleAnimations.push("scratchWallW");
@@ -107,31 +102,25 @@
     nekoPosX -= (diffX / distance) * nekoSpeed;
     nekoPosY -= (diffY / distance) * nekoSpeed;
     
-    // Batasi posisi neko agar tidak keluar layar
     nekoPosX = Math.min(Math.max(16, nekoPosX), window.innerWidth - 16);
     nekoPosY = Math.min(Math.max(16, nekoPosY), window.innerHeight - 16);
   }
 
-  // --- Svelte Lifecycle Hook ---
   onMount(() => {
-    // Cek jika user preferensi "reduced motion"
     const isReducedMotion = window.matchMedia(`(prefers-reduced-motion: reduce)`).matches;
     if (isReducedMotion) return;
 
-    // Pasang event listener untuk mouse
     const handleMouseMove = (event) => {
       mousePosX = event.clientX;
       mousePosY = event.clientY;
     };
     document.addEventListener("mousemove", handleMouseMove);
 
-    // Jalankan game loop utama
     let lastFrameTimestamp;
     let animationFrameId;
     function onAnimationFrame(timestamp) {
       if (!lastFrameTimestamp) lastFrameTimestamp = timestamp;
       
-      // Throttle frame rate agar mirip dengan original (sekitar 10fps)
       if (timestamp - lastFrameTimestamp > 100) {
         lastFrameTimestamp = timestamp;
         frame();
@@ -140,7 +129,6 @@
     }
     animationFrameId = window.requestAnimationFrame(onAnimationFrame);
     
-    // Cleanup: Hapus listener & loop saat komponen dihancurkan
     return () => {
       document.removeEventListener("mousemove", handleMouseMove);
       window.cancelAnimationFrame(animationFrameId);
@@ -148,7 +136,6 @@
   });
 </script>
 
-<!-- Elemen HTML yang dikontrol oleh logika di atas -->
 <div 
   class="oneko-neko"
   style="left: {nekoPosX - 16}px; top: {nekoPosY - 16}px; background-position: {backgroundPosition};"
@@ -163,9 +150,7 @@
     position: fixed;
     pointer-events: none;
     image-rendering: pixelated;
-    z-index: 2147483647; /* Sama persis dengan z-index di source code */
-    
-    /* Pastikan path ini benar! */
+    z-index: 2147483647;
     background-image: url('/neko.gif');
   }
 </style>
