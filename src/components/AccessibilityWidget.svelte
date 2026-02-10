@@ -1,15 +1,23 @@
-<!-- src/components/AccessibilityWidget.svelte - Modern Complex Version -->
+<!-- src/components/AccessibilityWidget.svelte - FIXED & ENHANCED VERSION -->
 <script>
-  import { onMount, onDestroy, createEventDispatcher } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { fly, scale, fade } from 'svelte/transition';
   import { 
-    theme, language, fontSize, reducedMotion, highContrast, 
-    focusVisible, effectiveTheme, effectiveMotion, systemPreferences,
-    announcements, a11yUtils 
+    theme, 
+    language, 
+    fontSize, 
+    reducedMotion, 
+    highContrast, 
+    focusVisible, 
+    effectiveTheme, 
+    effectiveMotion, 
+    systemPreferences,
+    announcements, 
+    a11yUtils,
+    resetAllSettings 
   } from '../stores.js';
+  import { t } from '../i18n.js';
 
-  const dispatch = createEventDispatcher();
-  
   let isPopupOpen = false;
   let activeTab = 'display';
   let widget;
@@ -19,26 +27,26 @@
 
   // Enhanced theme options
   const themes = [
-    { id: 'light', icon: 'sun', label: 'Terang', desc: 'Mode terang standar' },
-    { id: 'dark', icon: 'moon', label: 'Gelap', desc: 'Mode gelap untuk mata' },
-    { id: 'retro', icon: 'cassette', label: 'Retro', desc: 'Gaya vintage klasik' },
-    { id: 'high-contrast', icon: 'contrast', label: 'Kontras Tinggi', desc: 'Untuk aksesibilitas visual' },
-    { id: 'blue-light', icon: 'shield', label: 'Filter Biru', desc: 'Kurangi cahaya biru' }
+    { id: 'light', icon: 'sun', labelKey: 'themeLight', descKey: 'themeLightDesc' },
+    { id: 'dark', icon: 'moon', labelKey: 'themeDark', descKey: 'themeDarkDesc' },
+    { id: 'retro', icon: 'cassette', labelKey: 'themeRetro', descKey: 'themeRetroDesc' },
+    { id: 'high-contrast', icon: 'contrast', labelKey: 'themeHighContrast', descKey: 'themeHighContrastDesc' },
+    { id: 'blue-light', icon: 'shield', labelKey: 'themeBlueLight', descKey: 'themeBlueLightDesc' }
   ];
 
   const languages = [
-    { id: 'id', label: 'ID', name: 'Bahasa Indonesia', rtl: false },
-    { id: 'en', label: 'EN', name: 'English', rtl: false },
-    { id: 'jp', label: 'JP', name: '日本語', rtl: false },
-    { id: 'kr', label: 'KR', name: '한국어', rtl: false },
-    { id: 'ar', label: 'AR', name: 'العربية', rtl: true }
+    { id: 'id', label: 'ID', nameKey: 'languageIndonesian', rtl: false },
+    { id: 'en', label: 'EN', nameKey: 'languageEnglish', rtl: false },
+    { id: 'jp', label: 'JP', nameKey: 'languageJapanese', rtl: false },
+    { id: 'kr', label: 'KR', nameKey: 'languageKorean', rtl: false },
+    { id: 'ar', label: 'AR', nameKey: 'languageArabic', rtl: true }
   ];
 
   const tabs = [
-    { id: 'display', label: 'Tampilan', icon: 'palette' },
-    { id: 'motion', label: 'Gerak', icon: 'animation' },
-    { id: 'text', label: 'Teks', icon: 'type' },
-    { id: 'interaction', label: 'Interaksi', icon: 'touch' }
+    { id: 'display', labelKey: 'display', icon: 'palette' },
+    { id: 'motion', labelKey: 'motion', icon: 'animation' },
+    { id: 'text', labelKey: 'text', icon: 'type' },
+    { id: 'interaction', labelKey: 'interaction', icon: 'touch' }
   ];
 
   // Keyboard navigation
@@ -58,24 +66,20 @@
       event.preventDefault();
       closePopup();
     }
-    if (event.key === 'Tab') {
-      // Focus trap is handled by a11yUtils.setFocusTrap
-    }
   }
 
   function togglePopup() {
     isPopupOpen = !isPopupOpen;
     
     if (isPopupOpen) {
-      a11yUtils.announce('Panel aksesibilitas dibuka', 'polite');
-      // Set focus trap after transition
+      a11yUtils.announce(t('accessibility', $language) + ' panel opened', 'polite');
       setTimeout(() => {
         if (popupElement) {
           destroyFocusTrap = a11yUtils.setFocusTrap(popupElement);
         }
       }, 100);
     } else {
-      a11yUtils.announce('Panel aksesibilitas ditutup', 'polite');
+      a11yUtils.announce(t('accessibility', $language) + ' panel closed', 'polite');
       if (destroyFocusTrap) {
         destroyFocusTrap();
         destroyFocusTrap = null;
@@ -86,7 +90,7 @@
 
   function closePopup() {
     isPopupOpen = false;
-    a11yUtils.announce('Panel aksesibilitas ditutup', 'polite');
+    a11yUtils.announce(t('accessibility', $language) + ' panel closed', 'polite');
     if (destroyFocusTrap) {
       destroyFocusTrap();
       destroyFocusTrap = null;
@@ -94,14 +98,14 @@
     widget?.focus();
   }
 
-  // Font size controls with bounds checking
+  // Font size controls
   function changeFontSize(amount) {
     fontSize.update(currentSize => {
       const newSize = currentSize + amount;
       const boundedSize = Math.max(75, Math.min(150, newSize));
       
       if (boundedSize !== currentSize) {
-        a11yUtils.announce(`Ukuran font diubah ke ${boundedSize}%`, 'polite');
+        a11yUtils.announce(`${t('fontSize', $language)} ${boundedSize}%`, 'polite');
       }
       
       return boundedSize;
@@ -110,28 +114,23 @@
 
   function resetFontSize() {
     fontSize.set(100);
-    a11yUtils.announce('Ukuran font direset ke default', 'polite');
+    a11yUtils.announce(`${t('fontSize', $language)} reset to 100%`, 'polite');
   }
 
   // Theme change handler
   function changeTheme(newTheme) {
     theme.set(newTheme);
-    const themeName = themes.find(t => t.id === newTheme)?.label || newTheme;
-    a11yUtils.announce(`Tema diubah ke ${themeName}`, 'polite');
+    const themeObj = themes.find(t => t.id === newTheme);
+    const themeName = themeObj ? t(themeObj.labelKey, $language) : newTheme;
+    a11yUtils.announce(`${t('theme', $language)}: ${themeName}`, 'polite');
   }
 
   // Language change handler
   function changeLanguage(newLang) {
     language.set(newLang);
-    const langName = languages.find(l => l.id === newLang)?.name || newLang;
-    a11yUtils.announce(`Bahasa diubah ke ${langName}`, 'polite');
-    
-    // Update document lang and dir attributes
-    if (typeof document !== 'undefined') {
-      document.documentElement.lang = newLang;
-      const langConfig = languages.find(l => l.id === newLang);
-      document.documentElement.dir = langConfig?.rtl ? 'rtl' : 'ltr';
-    }
+    const langObj = languages.find(l => l.id === newLang);
+    const langName = langObj ? t(langObj.nameKey, newLang) : newLang;
+    a11yUtils.announce(`${t('language', $language)}: ${langName}`, 'polite');
   }
 
   // Advanced accessibility toggles
@@ -139,7 +138,7 @@
     reducedMotion.update(current => {
       const newValue = !current;
       a11yUtils.announce(
-        newValue ? 'Animasi dikurangi' : 'Animasi normal', 
+        newValue ? t('reducedMotion', $language) + ' ON' : t('reducedMotion', $language) + ' OFF', 
         'polite'
       );
       return newValue;
@@ -150,7 +149,7 @@
     highContrast.update(current => {
       const newValue = !current;
       a11yUtils.announce(
-        newValue ? 'Kontras tinggi diaktifkan' : 'Kontras normal', 
+        newValue ? t('highContrast', $language) + ' ON' : t('highContrast', $language) + ' OFF', 
         'polite'
       );
       return newValue;
@@ -161,51 +160,11 @@
     focusVisible.update(current => {
       const newValue = !current;
       a11yUtils.announce(
-        newValue ? 'Indikator fokus ditampilkan' : 'Indikator fokus disembunyikan', 
+        newValue ? t('focusIndicator', $language) + ' ON' : t('focusIndicator', $language) + ' OFF', 
         'polite'
       );
       return newValue;
     });
-  }
-
-  // Apply CSS custom properties
-  $: if (typeof document !== 'undefined') {
-    applyThemeStyles($effectiveTheme, $fontSize, $effectiveMotion, $highContrast, $focusVisible);
-  }
-
-  function applyThemeStyles(currentTheme, currentFontSize, motionReduced, contrastHigh, focusVis) {
-    const root = document.documentElement;
-    const body = document.body;
-    
-    // Remove all theme classes before adding the new one
-    themes.forEach(t => body.classList.remove(`theme-${t.id}`));
-    body.classList.add(`theme-${currentTheme}`);
-    
-    // Apply font size
-    root.style.fontSize = `${currentFontSize}%`;
-    
-    // Apply motion preferences
-    if (motionReduced) {
-      root.style.setProperty('--motion-duration', '0.01s');
-      root.style.setProperty('--motion-easing', 'linear');
-    } else {
-      root.style.removeProperty('--motion-duration');
-      root.style.removeProperty('--motion-easing');
-    }
-    
-    // Apply focus visibility
-    if (focusVis) {
-      body.classList.add('focus-visible');
-    } else {
-      body.classList.remove('focus-visible');
-    }
-    
-    // High contrast overrides
-    if (contrastHigh) {
-      body.classList.add('high-contrast-mode');
-    } else {
-      body.classList.remove('high-contrast-mode');
-    }
   }
 
   // Click outside to close
@@ -230,7 +189,7 @@
         });
       };
 
-      handleSystemChange(); // Initial check
+      handleSystemChange();
       
       prefersDark.addEventListener('change', handleSystemChange);
       prefersReducedMotion.addEventListener('change', handleSystemChange);
@@ -272,403 +231,25 @@
       <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93s3.05-7.44 7-7.93v15.86zm2-15.86c3.94.49 7 3.85 7 7.93s-3.05 7.44-7 7.93V4.07z"/>
     </symbol>
     <symbol id="icon-shield" viewBox="0 0 24 24">
-      <path fill="currentColor" d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,7C13.4,7 14.8,8.6 14.8,10.5V11C15.4,11 16,11.4 16,12V16C16,16.6 15.6,17 15,17H9C8.4,17 8,16.6 8,16V12C8,11.4 8.4,11 9,11V10.5C9,8.6 10.6,7 12,7M12,8.2C11.2,8.2 10.2,8.7 10.2,10.5V11H13.8V10.5C13.8,8.7 12.8,8.2 12,8.2Z"/>
+      <path fill="currentColor" d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
     </symbol>
     <symbol id="icon-palette" viewBox="0 0 24 24">
-      <path fill="currentColor" d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10c1.38 0 2.5-.56 2.5-1.25 0-.34-.11-.67-.28-.99-.18-.51-.42-.99-.75-1.43C13.73 18.67 14 18.26 14 17.75c0-.69-.56-1.25-1.25-1.25H9.5c-4.14 0-7.5-3.36-7.5-7.5C2 4.49 6.49 2 12 2z"/>
+      <path fill="currentColor" d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
     </symbol>
     <symbol id="icon-animation" viewBox="0 0 24 24">
-      <path fill="currentColor" d="M4,2A2,2 0 0,0 2,4V11H4V4H11V2H4M22,2H15V4H22V11H24V4A2,2 0 0,0 22,2M4,13H2V20A2,2 0 0,0 4,22H11V20H4V13M22,13V20H15V22H22A2,2 0 0,0 24,20V13H22M6,6V18H18V6H6M16,16H8V8H16V16Z"/>
+      <path fill="currentColor" d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/>
     </symbol>
     <symbol id="icon-type" viewBox="0 0 24 24">
-      <path fill="currentColor" d="M18,20H6V18H7V7H6V5H18V7H17V18H18V20M8,8V18H10V13H14V18H16V8H8Z"/>
+      <path fill="currentColor" d="M5 4v3h5.5v12h3V7H19V4z"/>
     </symbol>
     <symbol id="icon-touch" viewBox="0 0 24 24">
-      <path fill="currentColor" d="M9,11H7V9H9V11M13,11H11V9H13V11M17,11H15V9H17V11M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3Z"/>
+      <path fill="currentColor" d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74l-3.43-.72c-.08-.01-.15-.03-.24-.03-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/>
+    </symbol>
+    <symbol id="icon-close" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
     </symbol>
   </defs>
 </svg>
-
-<!-- Accessibility Widget Container -->
-<div class="widget-container">
-  <!-- Main FAB Button -->
-  <button 
-    bind:this={widget}
-    class="fab" 
-    class:reduced-motion={$effectiveMotion}
-    on:click={togglePopup} 
-    on:keydown={handleWidgetKeydown}
-    aria-label="Buka menu pengaturan aksesibilitas"
-    aria-expanded={isPopupOpen}
-    aria-describedby="{uniqueId}-description"
-    aria-haspopup="dialog"
-    type="button"
-  >
-    <svg width="24" height="24" aria-hidden="true">
-      <use href="#icon-accessibility" />
-    </svg>
-    
-    <!-- Status indicators -->
-    {#if $highContrast || $reducedMotion || $fontSize !== 100}
-      <div class="status-indicator" aria-hidden="true"></div>
-    {/if}
-  </button>
-
-  <!-- Hidden description for screen readers -->
-  <div id="{uniqueId}-description" class="sr-only">
-    Pengaturan aksesibilitas termasuk tema, ukuran font, bahasa, dan opsi gerakan
-  </div>
-
-  <!-- Enhanced Popup Panel -->
-  {#if isPopupOpen}
-      <div 
-      bind:this={popupElement}
-      class="popup" 
-      class:reduced-motion={$effectiveMotion}
-      transition:fly={{ y: 20, duration: $effectiveMotion ? 0 : 300 }}
-      on:keydown={handlePopupKeydown}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="{uniqueId}-title"
-      aria-describedby="{uniqueId}-desc"
-      tabindex="-1"
-    >
-      <!-- Popup Header -->
-      <div class="popup-header">
-        <div>
-          <h3 id="{uniqueId}-title">Pengaturan Aksesibilitas</h3>
-          <p id="{uniqueId}-desc" class="header-description">
-            Sesuaikan tampilan dan interaksi
-          </p>
-        </div>
-        <button 
-          class="close-btn" 
-          on:click={closePopup}
-          aria-label="Tutup panel aksesibilitas"
-          type="button"
-        >
-          ×
-        </button>
-      </div>
-
-      <!-- Tab Navigation -->
-      <div class="tab-container" role="tablist" aria-label="Kategori pengaturan">
-        {#each tabs as tab (tab.id)}
-          <button
-            class="tab-btn"
-            class:active={activeTab === tab.id}
-            role="tab"
-            aria-selected={activeTab === tab.id}
-            aria-controls="{uniqueId}-panel-{tab.id}"
-            id="{uniqueId}-tab-{tab.id}"
-            on:click={() => activeTab = tab.id}
-            type="button"
-          >
-            <svg width="16" height="16" aria-hidden="true">
-              <use href="#icon-{tab.icon}" />
-            </svg>
-            <span>{tab.label}</span>
-          </button>
-        {/each}
-      </div>
-
-      <!-- Tab Content -->
-      <div class="tab-content">
-        <!-- Display Tab -->
-        {#if activeTab === 'display'}
-          <div 
-            id="{uniqueId}-panel-display" 
-            role="tabpanel" 
-            aria-labelledby="{uniqueId}-tab-display"
-            class="panel-content"
-            in:fade={{ duration: 150, delay: 150 }}
-            out:fade={{ duration: 150 }}
-          >
-            <!-- Theme Selection -->
-            <div class="setting-group">
-              <div class="setting-header">
-                <p class="setting-label" id="theme-group-label">Mode Tema</p>
-                <p class="setting-description">Pilih tema visual yang nyaman</p>
-              </div>
-              
-              <div class="theme-grid" role="group" aria-labelledby="theme-group-label">
-                {#each themes as t (t.id)}
-                  <button
-                    class="theme-card"
-                    class:active={t.id === $theme}
-                    on:click={() => changeTheme(t.id)}
-                    aria-pressed={t.id === $theme}
-                    aria-describedby="theme-{t.id}-desc"
-                    type="button"
-                  >
-                    <div class="theme-icon">
-                      <svg width="20" height="20" aria-hidden="true">
-                        <use href="#icon-{t.icon}" />
-                      </svg>
-                    </div>
-                    <div class="theme-content">
-                      <span class="theme-name">{t.label}</span>
-                      <span id="theme-{t.id}-desc" class="theme-desc">{t.desc}</span>
-                    </div>
-                  </button>
-                {/each}
-              </div>
-            </div>
-
-            <!-- High Contrast Toggle -->
-            <div class="setting-group">
-              <div class="setting-header">
-                <label for="contrast-toggle" class="setting-label">Kontras Tinggi</label>
-                <p class="setting-description" id="contrast-desc">Meningkatkan kontras untuk keterbacaan</p>
-              </div>
-              
-              <label class="toggle-switch">
-                <input 
-                  type="checkbox" 
-                  id="contrast-toggle"
-                  bind:checked={$highContrast}
-                  on:change={toggleHighContrast}
-                  aria-describedby="contrast-desc"
-                />
-                <span class="toggle-slider" aria-hidden="true"></span>
-                <span class="toggle-text">
-                  {$highContrast ? 'Aktif' : 'Nonaktif'}
-                </span>
-              </label>
-            </div>
-          </div>
-        {/if}
-
-        <!-- Motion Tab -->
-        {#if activeTab === 'motion'}
-          <div 
-            id="{uniqueId}-panel-motion" 
-            role="tabpanel" 
-            aria-labelledby="{uniqueId}-tab-motion"
-            class="panel-content"
-            in:fade={{ duration: 150, delay: 150 }}
-            out:fade={{ duration: 150 }}
-          >
-            <!-- Reduced Motion -->
-            <div class="setting-group">
-              <div class="setting-header">
-                <label for="motion-toggle" class="setting-label">Kurangi Gerakan</label>
-                <p class="setting-description" id="motion-desc">Mengurangi animasi dan transisi</p>
-              </div>
-              
-              <label class="toggle-switch">
-                <input 
-                  type="checkbox"
-                  id="motion-toggle"
-                  bind:checked={$reducedMotion}
-                  on:change={toggleReducedMotion}
-                  aria-describedby="motion-desc"
-                />
-                <span class="toggle-slider" aria-hidden="true"></span>
-                <span class="toggle-text">
-                  {$reducedMotion ? 'Animasi dikurangi' : 'Animasi normal'}
-                </span>
-              </label>
-            </div>
-
-            <!-- System Preferences Info -->
-            <div class="info-panel">
-              <h4>Preferensi Sistem</h4>
-              <div class="system-info">
-                <div class="info-item">
-                  <span>Tema sistem:</span>
-                  <span class="info-value">{$systemPreferences.prefersColorScheme}</span>
-                </div>
-                <div class="info-item">
-                  <span>Gerakan sistem:</span>
-                  <span class="info-value">
-                    {$systemPreferences.prefersReducedMotion ? 'Dikurangi' : 'Normal'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        {/if}
-
-        <!-- Text Tab -->
-        {#if activeTab === 'text'}
-          <div 
-            id="{uniqueId}-panel-text" 
-            role="tabpanel" 
-            aria-labelledby="{uniqueId}-tab-text"
-            class="panel-content"
-            in:fade={{ duration: 150, delay: 150 }}
-            out:fade={{ duration: 150 }}
-          >
-            <!-- Font Size Control -->
-            <div class="setting-group">
-              <div class="setting-header">
-                <p class="setting-label" id="font-size-label">Ukuran Font</p>
-                <p class="setting-description">Sesuaikan ukuran teks untuk keterbacaan</p>
-              </div>
-              
-              <div class="font-control" role="group" aria-labelledby="font-size-label">
-                <button 
-                  class="font-btn decrease"
-                  on:click={() => changeFontSize(-5)} 
-                  disabled={$fontSize <= 75}
-                  aria-label="Perkecil font"
-                  type="button"
-                >
-                  A-
-                </button>
-                
-                <div class="font-display">
-                  <span class="font-percentage" aria-live="polite">{$fontSize}%</span>
-                  <button 
-                    class="reset-btn"
-                    on:click={resetFontSize}
-                    disabled={$fontSize === 100}
-                    aria-label="Reset ukuran font ke default"
-                    type="button"
-                  >
-                    Reset
-                  </button>
-                </div>
-                
-                <button 
-                  class="font-btn increase"
-                  on:click={() => changeFontSize(5)} 
-                  disabled={$fontSize >= 150}
-                  aria-label="Perbesar font"
-                  type="button"
-                >
-                  A+
-                </button>
-              </div>
-              
-              <!-- Font size slider for precise control -->
-              <div class="slider-control">
-                <label for="font-slider" class="sr-only">Kontrol presisi ukuran font</label>
-                <input
-                  id="font-slider"
-                  type="range"
-                  min="75"
-                  max="150"
-                  step="5"
-                  bind:value={$fontSize}
-                  class="font-slider"
-                  aria-valuemin="75"
-                  aria-valuemax="150"
-                  aria-valuenow={$fontSize}
-                  aria-label="Slider ukuran font dari 75% hingga 150%"
-                />
-              </div>
-            </div>
-
-            <!-- Language Selection -->
-            <div class="setting-group">
-              <div class="setting-header">
-                <p class="setting-label" id="lang-group-label">Bahasa Interface</p>
-                <p class="setting-description">Pilih bahasa tampilan</p>
-              </div>
-              
-              <div class="language-grid" role="group" aria-labelledby="lang-group-label">
-                {#each languages as lang (lang.id)}
-                  <button
-                    class="lang-card"
-                    class:active={lang.id === $language}
-                    class:rtl={lang.rtl}
-                    on:click={() => changeLanguage(lang.id)}
-                    aria-pressed={lang.id === $language}
-                    type="button"
-                  >
-                    <span class="lang-code">{lang.label}</span>
-                    <span class="lang-name">{lang.name}</span>
-                  </button>
-                {/each}
-              </div>
-            </div>
-          </div>
-        {/if}
-
-        <!-- Interaction Tab -->
-        {#if activeTab === 'interaction'}
-          <div 
-            id="{uniqueId}-panel-interaction" 
-            role="tabpanel" 
-            aria-labelledby="{uniqueId}-tab-interaction"
-            class="panel-content"
-            in:fade={{ duration: 150, delay: 150 }}
-            out:fade={{ duration: 150 }}
-          >
-            <!-- Focus Visibility -->
-            <div class="setting-group">
-              <div class="setting-header">
-                <label for="focus-toggle" class="setting-label">Indikator Fokus</label>
-                <p class="setting-description" id="focus-desc">Tampilkan border saat navigasi keyboard</p>
-              </div>
-              
-              <label class="toggle-switch">
-                <input 
-                  type="checkbox"
-                  id="focus-toggle"
-                  bind:checked={$focusVisible}
-                  on:change={toggleFocusVisible}
-                  aria-describedby="focus-desc"
-                />
-                <span class="toggle-slider" aria-hidden="true"></span>
-                <span class="toggle-text">
-                  {$focusVisible ? 'Ditampilkan' : 'Disembunyikan'}
-                </span>
-              </label>
-            </div>
-
-            <!-- Keyboard Shortcuts Info -->
-            <div class="info-panel">
-              <h4>Pintasan Keyboard</h4>
-              <div class="shortcuts-list">
-                <div class="shortcut-item">
-                  <kbd>Esc</kbd>
-                  <span>Tutup panel</span>
-                </div>
-                <div class="shortcut-item">
-                  <kbd>Tab</kbd>
-                  <span>Navigasi elemen</span>
-                </div>
-                <div class="shortcut-item">
-                  <kbd>Space/Enter</kbd>
-                  <span>Aktivasi tombol</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="setting-group">
-              <div class="setting-header">
-                <p class="setting-label">Aksi Cepat</p>
-                <p class="setting-description">Reset pengaturan ke default</p>
-              </div>
-              
-              <div class="quick-actions">
-                <button 
-                  class="action-btn secondary"
-                  on:click={() => {
-                    fontSize.set(100);
-                    theme.set('light');
-                    language.set('id');
-                    reducedMotion.set(false);
-                    highContrast.set(false);
-                    focusVisible.set(true);
-                    a11yUtils.announce('Semua pengaturan direset', 'polite');
-                  }}
-                  type="button"
-                >
-                  Reset Semua
-                </button>
-              </div>
-            </div>
-          </div>
-        {/if}
-      </div>
-    </div>
-  {/if}
-</div>
 
 <!-- Screen Reader Announcements -->
 <div aria-live="polite" aria-atomic="true" class="sr-only">
@@ -677,107 +258,276 @@
   {/each}
 </div>
 
+<!-- Main Widget Container -->
+<div class="widget-container" bind:this={widget}>
+  <!-- Widget Button -->
+  <button
+    class="widget-button"
+    on:click={togglePopup}
+    on:keydown={handleWidgetKeydown}
+    aria-label={t('accessibility', $language)}
+    aria-expanded={isPopupOpen}
+    aria-controls={uniqueId}
+    tabindex="0"
+  >
+    <svg class="widget-icon" aria-hidden="true">
+      <use href="#icon-accessibility" />
+    </svg>
+  </button>
+
+  <!-- Popup Panel -->
+  {#if isPopupOpen}
+    <div
+      class="popup"
+      bind:this={popupElement}
+      on:keydown={handlePopupKeydown}
+      id={uniqueId}
+      role="dialog"
+      aria-modal="true"
+      aria-label={t('accessibility', $language)}
+      transition:fly={{ y: 20, duration: 300 }}
+    >
+      <!-- Header -->
+      <div class="popup-header">
+        <h2 class="popup-title">{t('accessibility', $language)}</h2>
+        <button
+          class="close-button"
+          on:click={closePopup}
+          aria-label="Close"
+        >
+          <svg class="icon" aria-hidden="true">
+            <use href="#icon-close" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs" role="tablist">
+        {#each tabs as tab}
+          <button
+            class="tab"
+            class:active={activeTab === tab.id}
+            role="tab"
+            aria-selected={activeTab === tab.id}
+            aria-controls={`panel-${tab.id}`}
+            on:click={() => activeTab = tab.id}
+          >
+            <svg class="tab-icon" aria-hidden="true">
+              <use href={`#icon-${tab.icon}`} />
+            </svg>
+            <span class="tab-label">{t(tab.labelKey, $language)}</span>
+          </button>
+        {/each}
+      </div>
+
+      <!-- Tab Panels -->
+      <div class="tab-content">
+        
+        <!-- DISPLAY TAB -->
+        {#if activeTab === 'display'}
+          <div id="panel-display" role="tabpanel" class="panel" transition:fade={{ duration: 200 }}>
+            
+            <!-- Theme Selection -->
+            <div class="section">
+              <h3 class="section-title">{t('theme', $language)}</h3>
+              <div class="theme-grid">
+                {#each themes as themeOption}
+                  <button
+                    class="theme-card"
+                    class:active={$theme === themeOption.id}
+                    on:click={() => changeTheme(themeOption.id)}
+                    aria-label={t(themeOption.labelKey, $language)}
+                  >
+                    <svg class="theme-icon" aria-hidden="true">
+                      <use href={`#icon-${themeOption.icon}`} />
+                    </svg>
+                    <span class="theme-name">{t(themeOption.labelKey, $language)}</span>
+                    <span class="theme-desc">{t(themeOption.descKey, $language)}</span>
+                  </button>
+                {/each}
+              </div>
+            </div>
+
+            <!-- Language Selection -->
+            <div class="section">
+              <h3 class="section-title">{t('language', $language)}</h3>
+              <div class="language-grid">
+                {#each languages as lang}
+                  <button
+                    class="lang-card"
+                    class:active={$language === lang.id}
+                    class:rtl={lang.rtl}
+                    on:click={() => changeLanguage(lang.id)}
+                    aria-label={t(lang.nameKey, $language)}
+                  >
+                    <span class="lang-code">{lang.label}</span>
+                    <span class="lang-name">{t(lang.nameKey, $language)}</span>
+                  </button>
+                {/each}
+              </div>
+            </div>
+          </div>
+        {/if}
+
+        <!-- MOTION TAB -->
+        {#if activeTab === 'motion'}
+          <div id="panel-motion" role="tabpanel" class="panel" transition:fade={{ duration: 200 }}>
+            
+            <div class="section">
+              <div class="toggle-item">
+                <div class="toggle-info">
+                  <span class="toggle-label">{t('reducedMotion', $language)}</span>
+                  <span class="toggle-desc">Reduce animations and transitions</span>
+                </div>
+                <label class="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={$reducedMotion}
+                    on:change={toggleReducedMotion}
+                    aria-label={t('reducedMotion', $language)}
+                  />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="info-panel">
+              <h4>System Preferences</h4>
+              <div class="system-info">
+                <div class="info-item">
+                  <span>Prefers Motion:</span>
+                  <span class="info-value">
+                    {$systemPreferences.prefersReducedMotion ? 'Reduced' : 'Normal'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        {/if}
+
+        <!-- TEXT TAB -->
+        {#if activeTab === 'text'}
+          <div id="panel-text" role="tabpanel" class="panel" transition:fade={{ duration: 200 }}>
+            
+            <div class="section">
+              <h3 class="section-title">{t('fontSize', $language)}</h3>
+              
+              <!-- Font Size Buttons -->
+              <div class="font-controls">
+                <button
+                  class="font-btn"
+                  on:click={() => changeFontSize(-10)}
+                  disabled={$fontSize <= 75}
+                  aria-label="Decrease font size"
+                >
+                  A-
+                </button>
+                
+                <div class="font-display">
+                  <span class="font-percentage">{$fontSize}%</span>
+                  <button
+                    class="reset-btn"
+                    on:click={resetFontSize}
+                    disabled={$fontSize === 100}
+                    aria-label="Reset font size"
+                  >
+                    Reset
+                  </button>
+                </div>
+                
+                <button
+                  class="font-btn"
+                  on:click={() => changeFontSize(10)}
+                  disabled={$fontSize >= 150}
+                  aria-label="Increase font size"
+                >
+                  A+
+                </button>
+              </div>
+
+              <!-- Font Size Slider -->
+              <div class="slider-control">
+                <input
+                  type="range"
+                  min="75"
+                  max="150"
+                  step="5"
+                  value={$fontSize}
+                  on:input={(e) => fontSize.set(parseInt(e.target.value))}
+                  class="font-slider"
+                  aria-label={t('fontSize', $language)}
+                />
+              </div>
+            </div>
+          </div>
+        {/if}
+
+        <!-- INTERACTION TAB -->
+        {#if activeTab === 'interaction'}
+          <div id="panel-interaction" role="tabpanel" class="panel" transition:fade={{ duration: 200 }}>
+            
+            <div class="section">
+              <div class="toggle-item">
+                <div class="toggle-info">
+                  <span class="toggle-label">{t('highContrast', $language)}</span>
+                  <span class="toggle-desc">Increase contrast for better visibility</span>
+                </div>
+                <label class="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={$highContrast}
+                    on:change={toggleHighContrast}
+                    aria-label={t('highContrast', $language)}
+                  />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+
+              <div class="toggle-item">
+                <div class="toggle-info">
+                  <span class="toggle-label">{t('focusIndicator', $language)}</span>
+                  <span class="toggle-desc">Show enhanced focus indicators</span>
+                </div>
+                <label class="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={$focusVisible}
+                    on:change={toggleFocusVisible}
+                    aria-label={t('focusIndicator', $language)}
+                  />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Reset Button -->
+            <div class="section">
+              <div class="quick-actions">
+                <button
+                  class="action-btn secondary"
+                  on:click={resetAllSettings}
+                >
+                  {t('resetSettings', $language)}
+                </button>
+              </div>
+            </div>
+          </div>
+        {/if}
+
+      </div>
+    </div>
+  {/if}
+</div>
+
 <style>
-  /* CSS Custom Properties for Dynamic Theming */
-  :global(:root) {
-    --bg-primary: #ffffff;
-    --bg-secondary: #f8f9fa;
-    --text-primary: #1a1a1a;
-    --text-secondary: #666666;
-    --accent-color: #007bff;
-    --accent-hover: #0056b3;
-    --border-color: rgba(0, 0, 0, 0.1);
-    --border-radius: 12px;
-    --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.1);
-    --shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.15);
-    --widget-bg: rgba(255, 255, 255, 0.95);
-    --motion-duration: 0.3s;
-    --motion-easing: cubic-bezier(0.4, 0, 0.2, 1);
+  /* ============================================
+     BASE STYLES
+     ============================================ */
+  
+  * {
+    box-sizing: border-box;
   }
 
-  :global(body.theme-dark) {
-    --bg-primary: #1a1a1a;
-    --bg-secondary: #2d2d2d;
-    --text-primary: #f0f0f0;
-    --text-secondary: #b0b0b0;
-    --accent-color: #3391ff;
-    --accent-hover: #1976d2;
-    --border-color: rgba(255, 255, 255, 0.1);
-    --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.3);
-    --shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.4);
-    --widget-bg: rgba(30, 30, 30, 0.95);
-  }
-
-  :global(body.theme-retro) {
-    --bg-primary: #fdf3e5;
-    --bg-secondary: #f5e6d3;
-    --text-primary: #413529;
-    --text-secondary: #8b7355;
-    --accent-color: #b8001f;
-    --accent-hover: #8b0015;
-    --border-color: rgba(65, 53, 41, 0.2);
-    --widget-bg: rgba(250, 235, 215, 0.95);
-    font-family: 'Courier New', Courier, monospace;
-  }
-
-  :global(body.theme-high-contrast) {
-    --bg-primary: #000000;
-    --bg-secondary: #1a1a1a;
-    --text-primary: #ffffff;
-    --text-secondary: #ffffff;
-    --accent-color: #ffff00;
-    --accent-hover: #cccc00;
-    --border-color: #ffffff;
-    --widget-bg: #000000;
-  }
-
-  :global(body.theme-blue-light) {
-    --bg-primary: #fff8e1;
-    --bg-secondary: #fff3c4;
-    --text-primary: #3e2723;
-    --text-secondary: #5d4037;
-    --accent-color: #ff6f00;
-    --accent-hover: #e65100;
-    --border-color: rgba(62, 39, 35, 0.2);
-    --widget-bg: rgba(255, 248, 225, 0.95);
-    filter: sepia(0.1);
-  }
-
-  :global(body) {
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-    transition: background-color var(--motion-duration) var(--motion-easing),
-                color var(--motion-duration) var(--motion-easing);
-  }
-
-  /* Focus Visible Styles */
-  :global(body.focus-visible *:focus-visible) {
-    outline: 3px solid var(--accent-color);
-    outline-offset: 2px;
-  }
-
-  :global(body:not(.focus-visible) *:focus) {
-    outline: none;
-  }
-
-  /* High Contrast Mode Enhancements */
-  :global(body.high-contrast-mode) {
-    filter: contrast(175%);
-  }
-  :global(body.high-contrast-mode) * {
-    background-image: none !important;
-  }
-
-  /* Reduced Motion Overrides */
-  .reduced-motion,
-  .reduced-motion * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-
-  /* Screen Reader Only Content */
   .sr-only {
     position: absolute;
     width: 1px;
@@ -787,348 +537,353 @@
     overflow: hidden;
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
-    border: 0;
+    border-width: 0;
   }
 
-  /* Widget Container */
+  /* ============================================
+     WIDGET CONTAINER
+     ============================================ */
+  
   .widget-container {
     position: fixed;
     bottom: 20px;
-    right: 0;
-    z-index: 1000;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    right: 20px;
+    z-index: 999999;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   }
 
-  /* Enhanced FAB Button */
-  .fab {
-    position: relative;
-    width: 50px;
-    height: 64px;
-    border-radius: 50% 0 0 50%;
-    background: #B8001F;
-    color: white;
+  /* ============================================
+     WIDGET BUTTON
+     ============================================ */
+  
+  .widget-button {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--accent-color, #3b82f6);
     border: none;
+    box-shadow: var(--shadow-heavy, 0 4px 12px rgba(0, 0, 0, 0.15));
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: var(--shadow-heavy);
-    cursor: pointer;
-    transition: transform var(--motion-duration) var(--motion-easing),
-                box-shadow var(--motion-duration) var(--motion-easing);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: white;
   }
 
-  .fab:hover {
-    transform: scale(1.01);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  .widget-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
   }
 
-  .fab:active {
-    transform: scale(0.95) translateX(0px);
+  .widget-button:focus {
+    outline: 3px solid var(--accent-color, #3b82f6);
+    outline-offset: 2px;
   }
 
-  .status-indicator {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 8px;
-    height: 8px;
-    background: #ff4444;
-    border-radius: 50%;
-    border: 2px solid white;
+  .widget-icon {
+    width: 28px;
+    height: 28px;
   }
 
-  /* Enhanced Popup */
+  /* ============================================
+     POPUP PANEL
+     ============================================ */
+  
   .popup {
     position: absolute;
-    bottom: 75px;
+    bottom: 70px;
     right: 0;
-    width: 360px;
-    max-height: calc(100vh - 100px);
-    background: var(--widget-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-heavy);
+    width: 400px;
+    max-height: 600px;
+    background: var(--bg-primary, #ffffff);
+    border-radius: 16px;
+    box-shadow: var(--shadow-heavy, 0 10px 40px rgba(0, 0, 0, 0.2));
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    border: 1px solid var(--border-color, #e5e5e5);
   }
 
-  /* Popup Header */
+  /* ============================================
+     HEADER
+     ============================================ */
+  
   .popup-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color, #e5e5e5);
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    align-items: flex-start;
-    padding: 20px 24px 16px;
-    border-bottom: 1px solid var(--border-color);
-    background: rgba(var(--bg-secondary-rgb), 0.5);
-    flex-shrink: 0;
+    background: var(--bg-secondary, #f8f9fa);
   }
 
-  .popup-header h3 {
-    margin: 0 0 4px 0;
+  .popup-title {
+    margin: 0;
     font-size: 1.25rem;
     font-weight: 700;
-    color: var(--text-primary);
+    color: var(--text-primary, #212529);
   }
 
-  .header-description {
-    margin: 0;
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-  }
-
-  .close-btn {
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    font-size: 1.5rem;
+  .close-button {
     width: 32px;
     height: 32px;
     border-radius: 8px;
+    border: none;
+    background: transparent;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color var(--motion-duration);
+    transition: background 0.2s;
+    color: var(--text-secondary, #6c757d);
   }
 
-  .close-btn:hover {
-    background-color: var(--border-color);
-    color: var(--text-primary);
+  .close-button:hover {
+    background: var(--bg-tertiary, #e9ecef);
   }
 
-  /* Tab Navigation */
-  .tab-container {
+  .icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* ============================================
+     TABS
+     ============================================ */
+  
+  .tabs {
     display: flex;
-    background: rgba(var(--bg-secondary-rgb), 0.5);
-    border-bottom: 1px solid var(--border-color);
-    flex-shrink: 0;
+    gap: 4px;
+    padding: 8px;
+    background: var(--bg-secondary, #f8f9fa);
+    border-bottom: 1px solid var(--border-color, #e5e5e5);
+    overflow-x: auto;
   }
 
-  .tab-btn {
+  .tab {
     flex: 1;
+    min-width: 80px;
+    padding: 10px 8px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    padding: 12px 8px;
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all var(--motion-duration);
-    border-bottom: 3px solid transparent;
-    position: relative;
+    transition: all 0.2s;
+    color: var(--text-secondary, #6c757d);
   }
 
-  .tab-btn:hover {
-    color: var(--text-primary);
-    background: rgba(var(--border-color), 0.5);
-  }
-  
-  .tab-btn:focus-visible {
-    outline: 2px solid var(--accent-color);
-    outline-offset: -2px;
+  .tab:hover {
+    background: var(--bg-tertiary, #e9ecef);
   }
 
-  .tab-btn.active {
-    color: var(--accent-color);
-    border-bottom-color: var(--accent-color);
-    background: var(--bg-primary);
+  .tab.active {
+    background: var(--accent-color, #3b82f6);
+    color: white;
   }
 
-  .tab-btn span {
+  .tab-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .tab-label {
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: 600;
   }
 
-  /* Tab Content */
+  /* ============================================
+     TAB CONTENT
+     ============================================ */
+  
   .tab-content {
     flex: 1;
     overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    padding: 16px;
   }
 
-  .panel-content {
-    padding: 24px;
+  .panel {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 20px;
   }
 
-  /* Setting Groups */
-  .setting-group {
+  .section {
     display: flex;
     flex-direction: column;
     gap: 12px;
   }
 
-  .setting-header {
-    margin-bottom: 8px;
-  }
-
-  .setting-label {
-    display: block;
+  .section-title {
+    margin: 0;
     font-size: 1rem;
     font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 4px;
+    color: var(--text-primary, #212529);
   }
 
-  .setting-description {
-    margin: 0;
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    line-height: 1.4;
-  }
-
-  /* Theme Grid */
+  /* ============================================
+     THEME GRID
+     ============================================ */
+  
   .theme-grid {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 8px;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
   }
 
   .theme-card {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 12px;
-    padding: 12px;
-    background: var(--bg-secondary);
-    border: 2px solid var(--border-color);
-    border-radius: var(--border-radius);
+    gap: 8px;
+    padding: 16px;
+    background: var(--bg-secondary, #f8f9fa);
+    border: 2px solid var(--border-color, #e5e5e5);
+    border-radius: 12px;
     cursor: pointer;
-    transition: all var(--motion-duration);
-    text-align: left;
-    color: var(--text-primary);
+    transition: all 0.2s;
+    color: var(--text-primary, #212529);
   }
 
   .theme-card:hover {
-    border-color: var(--accent-color);
+    border-color: var(--accent-color, #3b82f6);
     transform: translateY(-2px);
-    box-shadow: var(--shadow-light);
   }
 
   .theme-card.active {
-    border-color: var(--accent-color);
-    background: var(--accent-color);
-  }
-  .theme-card.active, .theme-card.active .theme-desc {
+    border-color: var(--accent-color, #3b82f6);
+    background: var(--accent-color, #3b82f6);
     color: white;
   }
 
+  .theme-card.active .theme-desc {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
   .theme-icon {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 8px;
-  }
-
-  .theme-card.active .theme-icon {
-    background: rgba(255, 255, 255, 0.1);
-  }
-
-  .theme-content {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+    width: 32px;
+    height: 32px;
   }
 
   .theme-name {
-    font-weight: 600;
     font-size: 0.875rem;
+    font-weight: 600;
   }
 
   .theme-desc {
     font-size: 0.75rem;
-    color: var(--text-secondary);
-    opacity: 0.9;
+    color: var(--text-tertiary, #adb5bd);
+    text-align: center;
   }
 
-  /* Toggle Switch */
-  .toggle-switch {
+  /* ============================================
+     TOGGLE SWITCH
+     ============================================ */
+  
+  .toggle-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    padding: 4px;
+    justify-content: space-between;
+    padding: 16px;
+    background: var(--bg-secondary, #f8f9fa);
+    border-radius: 12px;
+  }
+
+  .toggle-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .toggle-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary, #212529);
+  }
+
+  .toggle-desc {
+    font-size: 0.75rem;
+    color: var(--text-tertiary, #adb5bd);
+  }
+
+  .toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 28px;
   }
 
   .toggle-switch input {
-    position: absolute;
     opacity: 0;
     width: 0;
     height: 0;
   }
 
   .toggle-slider {
-    position: relative;
-    width: 48px;
-    height: 24px;
-    background: var(--border-color);
-    border-radius: 12px;
-    transition: background var(--motion-duration);
-    flex-shrink: 0;
-  }
-
-  .toggle-slider::before {
-    content: '';
     position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 20px;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--border-color, #e5e5e5);
+    transition: 0.3s;
+    border-radius: 28px;
+  }
+
+  .toggle-slider:before {
+    position: absolute;
+    content: "";
     height: 20px;
-    background: white;
+    width: 20px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.3s;
     border-radius: 50%;
-    transition: transform var(--motion-duration) var(--motion-easing);
   }
 
-  .toggle-switch input:checked + .toggle-slider {
-    background: var(--accent-color);
+  input:checked + .toggle-slider {
+    background: var(--accent-color, #3b82f6);
   }
 
-  .toggle-switch input:checked + .toggle-slider::before {
-    transform: translateX(24px);
+  input:checked + .toggle-slider:before {
+    transform: translateX(20px);
   }
 
-  .toggle-text {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-primary);
-  }
-
-  /* Font Controls */
-  .font-control {
+  /* ============================================
+     FONT CONTROLS
+     ============================================ */
+  
+  .font-controls {
     display: flex;
     align-items: center;
     gap: 16px;
     padding: 12px;
-    background: var(--bg-secondary);
-    border-radius: var(--border-radius);
+    background: var(--bg-secondary, #f8f9fa);
+    border-radius: 12px;
   }
 
   .font-btn {
     width: 40px;
     height: 40px;
     border-radius: 8px;
-    border: 2px solid var(--border-color);
-    background: var(--bg-primary);
-    color: var(--text-primary);
+    border: 2px solid var(--border-color, #e5e5e5);
+    background: var(--bg-primary, #ffffff);
+    color: var(--text-primary, #212529);
     font-weight: 700;
     cursor: pointer;
-    transition: all var(--motion-duration);
+    transition: all 0.2s;
     flex-shrink: 0;
   }
 
   .font-btn:hover:not(:disabled) {
-    border-color: var(--accent-color);
-    transform: scale(1.01);
+    border-color: var(--accent-color, #3b82f6);
+    transform: scale(1.05);
   }
 
   .font-btn:disabled {
@@ -1147,23 +902,23 @@
   .font-percentage {
     font-size: 1.25rem;
     font-weight: 700;
-    color: var(--accent-color);
+    color: var(--accent-color, #3b82f6);
   }
 
   .reset-btn {
     padding: 4px 8px;
     font-size: 0.75rem;
     background: none;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-color, #e5e5e5);
     border-radius: 4px;
-    color: var(--text-secondary);
+    color: var(--text-secondary, #6c757d);
     cursor: pointer;
-    transition: all var(--motion-duration);
+    transition: all 0.2s;
   }
 
   .reset-btn:hover:not(:disabled) {
-    border-color: var(--accent-color);
-    color: var(--accent-color);
+    border-color: var(--accent-color, #3b82f6);
+    color: var(--accent-color, #3b82f6);
   }
 
   .reset-btn:disabled {
@@ -1171,7 +926,10 @@
     cursor: not-allowed;
   }
 
-  /* Font Slider */
+  /* ============================================
+     FONT SLIDER
+     ============================================ */
+  
   .slider-control {
     margin-top: 8px;
   }
@@ -1180,7 +938,7 @@
     width: 100%;
     height: 6px;
     border-radius: 3px;
-    background: var(--border-color);
+    background: var(--border-color, #e5e5e5);
     outline: none;
     appearance: none;
     -webkit-appearance: none;
@@ -1192,29 +950,34 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: var(--accent-color);
+    background: var(--accent-color, #3b82f6);
     cursor: pointer;
-    box-shadow: var(--shadow-light);
-    transition: transform var(--motion-duration);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s;
   }
+
   .font-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.01);
+    transform: scale(1.1);
   }
 
   .font-slider::-moz-range-thumb {
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: var(--accent-color);
+    background: var(--accent-color, #3b82f6);
     cursor: pointer;
     border: none;
-    transition: transform var(--motion-duration);
-  }
-  .font-slider::-moz-range-thumb:hover {
-    transform: scale(1.01);
+    transition: transform 0.2s;
   }
 
-  /* Language Grid */
+  .font-slider::-moz-range-thumb:hover {
+    transform: scale(1.1);
+  }
+
+  /* ============================================
+     LANGUAGE GRID
+     ============================================ */
+  
   .language-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1228,24 +991,25 @@
     justify-content: center;
     gap: 4px;
     padding: 16px 8px;
-    background: var(--bg-secondary);
-    border: 2px solid var(--border-color);
-    border-radius: var(--border-radius);
+    background: var(--bg-secondary, #f8f9fa);
+    border: 2px solid var(--border-color, #e5e5e5);
+    border-radius: 12px;
     cursor: pointer;
-    transition: all var(--motion-duration);
-    color: var(--text-primary);
+    transition: all 0.2s;
+    color: var(--text-primary, #212529);
   }
 
   .lang-card:hover {
-    border-color: var(--accent-color);
+    border-color: var(--accent-color, #3b82f6);
     transform: translateY(-2px);
   }
 
   .lang-card.active {
-    border-color: var(--accent-color);
-    background: var(--accent-color);
+    border-color: var(--accent-color, #3b82f6);
+    background: var(--accent-color, #3b82f6);
     color: white;
   }
+
   .lang-card.active .lang-name {
     color: white;
   }
@@ -1257,26 +1021,29 @@
 
   .lang-name {
     font-size: 0.75rem;
-    color: var(--text-secondary);
+    color: var(--text-secondary, #6c757d);
   }
 
   .lang-card.rtl {
     direction: rtl;
   }
 
-  /* Info Panels */
+  /* ============================================
+     INFO PANELS
+     ============================================ */
+  
   .info-panel {
     padding: 16px;
-    background: var(--bg-secondary);
-    border-radius: var(--border-radius);
-    border-left: 4px solid var(--accent-color);
+    background: var(--bg-secondary, #f8f9fa);
+    border-radius: 12px;
+    border-left: 4px solid var(--accent-color, #3b82f6);
   }
 
   .info-panel h4 {
     margin: 0 0 12px 0;
     font-size: 1rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--text-primary, #212529);
   }
 
   .system-info {
@@ -1293,35 +1060,14 @@
 
   .info-value {
     font-weight: 600;
-    color: var(--accent-color);
+    color: var(--accent-color, #3b82f6);
     text-transform: capitalize;
   }
 
-  /* Keyboard Shortcuts */
-  .shortcuts-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .shortcut-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 0.875rem;
-  }
-
-  kbd {
-    padding: 4px 8px;
-    font-size: 0.75rem;
-    font-family: monospace;
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  }
-
-  /* Quick Actions */
+  /* ============================================
+     QUICK ACTIONS
+     ============================================ */
+  
   .quick-actions {
     display: flex;
     gap: 8px;
@@ -1329,26 +1075,30 @@
 
   .action-btn {
     padding: 12px 24px;
-    border-radius: var(--border-radius);
+    border-radius: 12px;
     font-weight: 600;
     cursor: pointer;
-    transition: all var(--motion-duration);
+    transition: all 0.2s;
     border: 2px solid;
     width: 100%;
+    font-size: 0.875rem;
   }
 
   .action-btn.secondary {
     background: transparent;
-    color: var(--accent-color);
-    border-color: var(--accent-color);
+    color: var(--accent-color, #3b82f6);
+    border-color: var(--accent-color, #3b82f6);
   }
 
   .action-btn.secondary:hover {
-    background: var(--accent-color);
+    background: var(--accent-color, #3b82f6);
     color: white;
   }
 
-  /* Responsive Design */
+  /* ============================================
+     RESPONSIVE DESIGN
+     ============================================ */
+  
   @media (max-width: 480px) {
     .popup {
       width: calc(100vw - 20px);
@@ -1358,8 +1108,8 @@
     }
     
     .widget-container {
-      bottom: 0;
-      right: -10px;
+      bottom: 10px;
+      right: 10px;
     }
 
     .theme-grid {
@@ -1371,11 +1121,13 @@
     }
   }
 
-  /* Print Styles */
+  /* ============================================
+     PRINT STYLES
+     ============================================ */
+  
   @media print {
     .widget-container {
       display: none;
     }
   }
 </style>
-

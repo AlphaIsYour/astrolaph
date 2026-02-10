@@ -21,6 +21,7 @@ const { title } = Astro.props;
 	</head>
 	<body>
 		<slot />
+		<!-- Fixed widgets - mereka akan float independent dari document flow -->
 		<BackSong client:visible />
 		<CustomCursor client:load /> 
 		<AccessibilityWidget client:load />
@@ -36,6 +37,14 @@ const { title } = Astro.props;
 		font-display: swap;
 	}
 
+	@font-face {
+		font-family: 'ujicoba';
+		src: url('/fonts/ujicoba.woff2') format('woff2');
+		font-weight: normal;
+		font-style: normal;
+		font-display: swap;
+	}
+
   .bg-texture {
     background-image: url('/background/bg.jpg');
     background-size: 200px 200px;
@@ -43,8 +52,19 @@ const { title } = Astro.props;
     background-position: center;
   }
 
-	body {
+	/* PENTING: Pastikan html dan body full height */
+	html, body {
 		margin: 0;
+		padding: 0;
 		color: #B8001F;
+		min-height: 100vh;
+		position: relative; /* Ini penting untuk fixed positioning children */
+	}
+
+	/* Pastikan fixed elements tidak affected oleh transform/filter di parent */
+	body {
+		/* Jangan gunakan transform, perspective, filter, atau will-change 
+		   karena bisa bikin fixed positioning jadi relative ke parent */
+		isolation: isolate; /* Buat stacking context tanpa ganggu fixed positioning */
 	}
 </style>
